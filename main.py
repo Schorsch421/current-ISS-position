@@ -7,30 +7,41 @@ import PySimpleGUI as sg
 import os
 
 got_position = False
+created_new_img = False
 main_program_open = True
 window_size = (680,502)
 new_window_size = False
 iss_position = None
 
-class back_end(threading.Thread):
+class get_iss_position(threading.Thread):
     def __init___(self):
         threading.Thread.__init__(self)
-
+    
     def get_iss_position(self):
-        global iss_position
+        global iss_position, got_position
         try:
             answer = requests.get('http://api.open-notify.org/iss-now.json')
             if answer.status_code == 200:
                 data = answer.json()
                 iss_position = data['iss_position']
-                return iss_position
+                got_position = True
             else:
-                return None
+                got_position = False
         except requests.exceptions.ConnectionError:
             print('check your internet connection')
 
+    def run(self):
+        global main_program_open, got_position
+        while main_program_open:
+            if got_position == False:
+                self.get_iss_position()
+    
+class generate_img(threading.Thread):
+    def __init___(self):
+        threading.Thread.__init__(self)
+
     def iss_map(self, path):
-        global got_position, window_size
+        global window_size, created_new_img
         if iss_position:
             if window_size[0] < window_size[1]:
                 plt.figure(figsize=(int(window_size[0]*.01), int(window_size[0]*.01)))
@@ -48,12 +59,12 @@ class back_end(threading.Thread):
 
             try:
                 plt.savefig(fname=path+'\img.png', transparent=True)
-                got_position = True
+                created_new_img = True
 
             except FileNotFoundError:
                 os.makedirs(path)
                 plt.savefig(fname=path+'\img.png', transparent=True)
-                got_position = True
+                created_new_img = True
             except SystemError:
                 print('an error ocurred')
         else:
@@ -63,9 +74,9 @@ class back_end(threading.Thread):
         global main_program_open, got_position, new_window_size
         path = os.getcwd() + r'\image_where_is_the_iss'
         while main_program_open:
-            if got_position == False:
-                self.get_iss_position()
+            if got_position == True:
                 self.iss_map(path)
+                got_position = False
             if new_window_size:
                 new_window_size = False
                 self.iss_map(path)
@@ -77,6 +88,8 @@ class gui(threading.Thread):
        threading.Thread.__init__(self)
 
     def make_window(self, path):
+        sg.theme('DarkGrey11')
+
         layout = [
             [sg.Column([[sg.Image(path+'\img.png', enable_events=True, key='position_img')]], justification='centre')]
         ]
@@ -85,7 +98,7 @@ class gui(threading.Thread):
         return window
 
     def run(self):
-        global main_program_open, got_position, window_size, new_window_size
+        global main_program_open, created_new_img, window_size, new_window_size
         path = os.getcwd() + r'\image_where_is_the_iss'
         main_window = self.make_window(path)
         while main_program_open:
@@ -94,9 +107,9 @@ class gui(threading.Thread):
                 main_program_open = False
                 main_window.close()
                 break
-            if got_position:
+            if created_new_img:
                 main_window['position_img'].update(path+'\img.png')
-                got_position = False
+                created_new_img = False
             if window_size != main_window.size:
                 window_size = main_window.size
                 new_window_size = True
@@ -104,6 +117,8 @@ class gui(threading.Thread):
 
 if __name__ == '__main__':
     t1 = gui()
-    t2 = back_end()
+    t2 = get_iss_position()
+    t3 = generate_img()
     t1.start()
     t2.start()
+    t3.start()
