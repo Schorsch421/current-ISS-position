@@ -11,6 +11,6 @@ pip install PySimpleGUI
 ```
 
 ## You simply start 'main.py' and you see something like this:
-![Screenshot 2023-12-29 200117](https://github.com/Schorsch421/Where-is-the-ISS-/assets/99992873/1617e0bb-79b1-4cb2-ad19-8a1c1eaf699e)
+![Screenshot 2024-01-13 214549](https://github.com/Schorsch421/current-ISS-position/assets/99992873/5917b330-58f9-4819-a331-a3030f03caab)
 
 Please contact me, if you have trouble getting it running or if you found a bug. Thx!
