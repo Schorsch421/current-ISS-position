@@ -2,7 +2,7 @@
 
 This python script gives you the current location of the ISS visually. It updates regularly.
 
-## Waht you need:
+## What you need:
 ```
 pip install requests
 pip install matplotlib
