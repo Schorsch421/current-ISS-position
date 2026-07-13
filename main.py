@@ -35,6 +35,8 @@ class get_iss_position(threading.Thread):
         while main_program_open:
             if got_position == False:
                 self.get_iss_position()
+            else:
+                sleep(0.5)
     
 class generate_img(threading.Thread):
     def __init___(self):
@@ -80,7 +82,7 @@ class generate_img(threading.Thread):
             if new_window_size:
                 new_window_size = False
                 self.iss_map(path)
-            sleep(1)
+            sleep(.5)
 
 
 class gui(threading.Thread):
